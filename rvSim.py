@@ -1,9 +1,5 @@
 import time
-
-import matplotlib.pyplot as plt
-import math
 import numpy as np
-# import time
 import get_scans_vector as scan
 import Particle_Filter as Pf
 import LocalizationClient as lc

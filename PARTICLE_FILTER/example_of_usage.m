@@ -37,8 +37,11 @@ delta_theta = 0;
 
 h_pos = NaN;
 
-t = tcpip('127.0.0.1', 42069, 'NetworkRole', 'server');
+t = tcpip('0.0.0.0', 42069, 'NetworkRole', 'server');
+disp('here 1')
 fopen(t);
+disp('here 2')
+
 
 flag = true;
 while flag
@@ -111,5 +114,5 @@ for i = 1:50
     disp(current_th)
     disp(a.th_pos)
     
-    pause(delta_t);
+    %pause(delta_t);
 end
