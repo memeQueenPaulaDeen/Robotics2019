@@ -119,7 +119,7 @@ class Lidar(threading.Thread):
     def convertMeasures(self,measures):
         m = []
         for x in range(8):
-            m.append([measures[x*45][self.distanceIdx],(-x*45)%360])
+            m.append([measures[(x*-45)%360][self.distanceIdx],(x*45)%360])
         self.measures = np.array(m)
 
 

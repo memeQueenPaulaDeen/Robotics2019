@@ -57,7 +57,7 @@ while flag
 end
 
 
-for i = 1:50
+while true
     current_x = current_x + delta_x;
     current_y = current_y + delta_y;
     current_th = current_th + delta_theta;

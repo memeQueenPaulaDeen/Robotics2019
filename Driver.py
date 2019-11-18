@@ -114,8 +114,11 @@ if __name__ == "__main__":
         lidar = Lidar.Lidar()
         lidar.start()
 
+        while len(lidar.measures) == 0:
+            time.sleep(.1)
+
         measures = []
-        for x in range(50):
+        while True:
 
             measures = lidar.measures
             measures = np.append([float(dx), float(dy), float(dth)], measures)
