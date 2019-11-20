@@ -58,6 +58,8 @@ end
 
 
 while true
+    
+    try 
     current_x = current_x + delta_x;
     current_y = current_y + delta_y;
     current_th = current_th + delta_theta;
@@ -90,29 +92,34 @@ while true
     a.show_particles(); 
     a.show_location();
     
-    vert_x = current_x;
-    vert_y = current_y;
+    vert_x = a.x_pos;%current_x;
+    vert_y = a.y_pos;%current_y;
+    current_th = a.th_pos;
     
     for j =1:a.n_angles
         vert_x = [vert_x (current_x + mesures(j)*cosd(current_th+(j-1)*a.angle_resolution)) current_x];
         vert_y = [vert_y (current_y + mesures(j)*sind(current_th+(j-1)*a.angle_resolution)) current_y];
     end    
 
-    if~ishandle(h_pos)
-        h_pos = quiver(current_x,current_y,a.cell_size*cosd(current_th),a.cell_size*sind(current_th),'AutoScale','off','LineWidth',5,'Color','b');
-        h_plot_ray = plot(vert_x,vert_y,'b');
-    else
-        h_pos.XData = current_x;
-        h_pos.YData = current_y;
-        h_pos.UData = a.cell_size*cosd(current_th);
-        h_pos.VData = a.cell_size*sind(current_th);
-        h_plot_ray.XData = vert_x;
-        h_plot_ray.YData = vert_y;
-    end
+%     if~ishandle(h_pos)
+%         h_pos = quiver(current_x,current_y,a.cell_size*cosd(current_th),a.cell_size*sind(current_th),'AutoScale','off','LineWidth',5,'Color','b');
+%         h_plot_ray = plot(vert_x,vert_y,'b');
+%     else
+%         h_pos.XData = current_x;
+%         h_pos.YData = current_y;
+%         h_pos.UData = a.cell_size*cosd(current_th);
+%         h_pos.VData = a.cell_size*sind(current_th);
+%         h_plot_ray.XData = vert_x;
+%         h_plot_ray.YData = vert_y;
+%     end
     
     disp('Test')
     disp(current_th)
     disp(a.th_pos)
+    
+    catch 
+        disp('no read')
+    end
     
     %pause(delta_t);
 end

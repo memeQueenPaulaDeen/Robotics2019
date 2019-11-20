@@ -10,6 +10,7 @@ import Lidar
 import os
 import RPi.GPIO as GPIO
 import LocalizationClient as lc
+import threading
 
 def turn(angle):
     encoder.rightDistance = 0
@@ -43,8 +44,8 @@ def Forward(dist):
         measuredPhiDotLeft = -1 * encoder.getPhiDotLeft()
         measuredPhiDotRight = encoder.getPhiDotRight()
 
-        PIDleft.control(1.5, measuredPhiDotLeft, motors.setPhiDotDesiredLeft)
-        PIDRight.control(1.5, measuredPhiDotRight, motors.setPhiDotDesiredRight)
+        PIDleft.control(.5, measuredPhiDotLeft, motors.setPhiDotDesiredLeft)
+        PIDRight.control(.5, measuredPhiDotRight, motors.setPhiDotDesiredRight)
 
         motors.PID(1, measuredPhiDotLeft, 1.5, motors.setPhiDotDesiredLeft)
         motors.PID(1, measuredPhiDotRight, 1.5, motors.setPhiDotDesiredRight)
@@ -53,6 +54,8 @@ def Forward(dist):
 
     print("left Dist " + str(encoder.leftDistance))
     print("rightt Dist " + str(encoder.rightDistance))
+
+    motors.off()
 
 def testEncoder():
     lastX = 0
@@ -75,6 +78,13 @@ def testEncoder():
         lastTheta = encoder.theata
 
         time.sleep(10)
+
+def move(motors):
+    time.sleep(8)
+    motors.setPhiDotDesiredRight(.3)
+    motors.setPhiDotDesiredLeft(.35)
+    time.sleep(2)
+    motors.off()
 
 if __name__ == "__main__":
 
@@ -116,6 +126,12 @@ if __name__ == "__main__":
 
         while len(lidar.measures) == 0:
             time.sleep(.1)
+
+        print("going into therad")
+        t1 = threading.Thread(target=move, args=(motors,))
+        t1.start()
+        print("exit")
+
 
         measures = []
         while True:
