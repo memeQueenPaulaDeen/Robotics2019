@@ -120,16 +120,18 @@ class Encoder(Thread):
 		else:
 			deltaX = totalDistance
 
-		return deltaX , deltaY , deltaThetaRad
+		return deltaX , deltaY , deltaThetaRad, phiDotLeft, phiDotRight
 
 	def encoderUpdate(self,timeStep):
 
 		while True:
 			time.sleep(timeStep)
 
-			deltaX, deltaY, deltaThetaRad = self.getDeltas()
+			deltaX, deltaY, deltaThetaRad, phiDotLeft, phiDotRight = self.getDeltas()
 			self.x = self.x + deltaX
 			self.y = self.y + deltaY
 			self.theata = self.theata + deltaThetaRad
+			self.phiDotRight = phiDotRight
+			self.phiDotLeft = phiDotLeft
 
 

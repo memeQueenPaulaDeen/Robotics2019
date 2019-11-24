@@ -1,5 +1,6 @@
 import socket
 import time
+import threading
 
 
 class LocalizationClient():
@@ -18,7 +19,9 @@ class LocalizationClient():
 
 	def sendData(self,MESSAGE):
 		try:
-			self.s.sendall(MESSAGE)
+			sendThread = threading.Thread(target=self.s.sendall,args=(MESSAGE,))
+			sendThread.start()
+			#self.s.sendall(MESSAGE)
 		except BrokenPipeError as e:
 			print(e)
 			self.close()

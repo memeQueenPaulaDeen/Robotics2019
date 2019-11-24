@@ -36,9 +36,6 @@ class Motor():
         #print("Throtle left " + str(throt))
         self.setLeft(throt)
 
-    def PID(self,phiDotDesired,phiDotMeasured,Kp,target):
-            error = phiDotDesired - abs(phiDotMeasured)
-            target(phiDotDesired+Kp*error)
 
 
     def brake(self):

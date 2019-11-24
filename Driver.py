@@ -12,81 +12,142 @@ import RPi.GPIO as GPIO
 import LocalizationClient as lc
 import threading
 
-def turn(angle):
-    encoder.rightDistance = 0
-    encoder.leftDistance = 0
-    wheelBase = 21
-    wheelRadius = 4
-    print("rec dist : " + str((math.pi * (angle * (math.pi / 180)) * wheelBase) / (2 * wheelRadius)))
-    while (np.average([abs(encoder.leftDistance), abs(encoder.rightDistance)]) <
-           ((math.pi * (angle * (math.pi / 180)) * wheelBase) / (2 * wheelRadius))):
-        time.sleep(.05)
-        measuredPhiDotLeft = -1 * encoder.getPhiDotLeft()
-        measuredPhiDotRight = encoder.getPhiDotRight()
-
-        PIDleft.control(-.8, measuredPhiDotLeft, motors.setPhiDotDesiredLeft)
-        PIDRight.control(.8, measuredPhiDotRight, motors.setPhiDotDesiredRight)
-
-        # motors.PID(1,measuredPhiDotLeft,1.5,motors.setPhiDotDesiredLeft)
-        # motors.PID(1,measuredPhiDotRight, 1.5, motors.setPhiDotDesiredRight)
-        print("Phi Dot Right is: " + str(measuredPhiDotRight))
-        print("Phi Dot Left is: " + str(measuredPhiDotLeft))
-
-    print("left Dist " + str(encoder.leftDistance))
-    print("right Dist " + str(encoder.rightDistance))
-
-
-def Forward(dist):
-    encoder.rightDistance = 0
-    encoder.leftDistance = 0
-    while (np.average([abs(encoder.leftDistance), abs(encoder.rightDistance)]) < dist):
-        time.sleep(.05)
-        measuredPhiDotLeft = -1 * encoder.getPhiDotLeft()
-        measuredPhiDotRight = encoder.getPhiDotRight()
-
-        PIDleft.control(.5, measuredPhiDotLeft, motors.setPhiDotDesiredLeft)
-        PIDRight.control(.5, measuredPhiDotRight, motors.setPhiDotDesiredRight)
-
-        motors.PID(1, measuredPhiDotLeft, 1.5, motors.setPhiDotDesiredLeft)
-        motors.PID(1, measuredPhiDotRight, 1.5, motors.setPhiDotDesiredRight)
-        # print("Phi Dot Right is: " + str(measuredPhiDotRight))
-        # print("Phi Dot Left is: " + str(measuredPhiDotLeft))
-
-    print("left Dist " + str(encoder.leftDistance))
-    print("rightt Dist " + str(encoder.rightDistance))
-
-    motors.off()
-
-def testEncoder():
-    lastX = 0
-    lastY = 0
-    lastTheta = 0
-
-
-
-    while True:
-        delx = encoder.x - lastX
-        dely = encoder.y - lastY
-        delTheta = encoder.theata - lastTheta
-
-        print("del x is: " + str(delx))
-        print("del y is: " + str(dely))
-        print("del theta is: " + str(np.degrees(delTheta)))
-
-        lastX = encoder.x
-        lastY = encoder.y
-        lastTheta = encoder.theata
-
-        time.sleep(10)
-
-def move(motors):
-    time.sleep(8)
-    motors.setPhiDotDesiredRight(.3)
-    motors.setPhiDotDesiredLeft(.35)
-    time.sleep(2)
-    motors.off()
-
 if __name__ == "__main__":
+
+    def move(motors):
+        #time.sleep(8)
+        motors.setPhiDotDesiredRight(.7)
+        motors.setPhiDotDesiredLeft(.9)
+        time.sleep(8)
+        motors.off()
+
+
+    def turn(angle):
+        encoder.rightDistance = 0
+        encoder.leftDistance = 0
+        wheelBase = 21
+        wheelRadius = 4
+        print("rec dist : " + str((math.pi * (angle * (math.pi / 180)) * wheelBase) / (2 * wheelRadius)))
+        while (np.average([abs(encoder.leftDistance), abs(encoder.rightDistance)]) <
+               ((math.pi * (angle * (math.pi / 180)) * wheelBase) / (2 * wheelRadius))):
+            time.sleep(.05)
+            measuredPhiDotLeft = -1 * encoder.getPhiDotLeft()
+            measuredPhiDotRight = encoder.getPhiDotRight()
+
+            PIDleft.control(-.8, measuredPhiDotLeft, motors.setPhiDotDesiredLeft)
+            PIDRight.control(.8, measuredPhiDotRight, motors.setPhiDotDesiredRight)
+
+            # motors.PID(1,measuredPhiDotLeft,1.5,motors.setPhiDotDesiredLeft)
+            # motors.PID(1,measuredPhiDotRight, 1.5, motors.setPhiDotDesiredRight)
+            print("Phi Dot Right is: " + str(measuredPhiDotRight))
+            print("Phi Dot Left is: " + str(measuredPhiDotLeft))
+
+        print("left Dist " + str(encoder.leftDistance))
+        print("right Dist " + str(encoder.rightDistance))
+
+
+    def Forward(dist,encoder):
+
+        while (np.linalg.norm([abs(encoder.x), abs(encoder.y)]) < dist):
+            time.sleep(.2)
+
+            PIDleft.control(6, encoder.phiDotLeft, motors.setPhiDotDesiredLeft)
+            PIDRight.control(6, encoder.phiDotRight, motors.setPhiDotDesiredRight)
+
+            #motors.PID(1, measuredPhiDotLeft, 1.5, motors.setPhiDotDesiredLeft)
+            #motors.PID(1, measuredPhiDotRight, 1.5, motors.setPhiDotDesiredRight)
+            print("Phi Dot Right is: " + str(encoder.phiDotRight))
+            print("Phi Dot Left is: " + str(encoder.phiDotLeft))
+
+        print("x " + str(encoder.x))
+        print("y " + str(encoder.y))
+        print("theta " +str(np.degrees(encoder.theata)))
+        motors.brake()
+        time.sleep(1)
+        motors.off()
+
+    def testLocilization():
+        lidar = Lidar.Lidar()
+        lidar.start()
+
+        while len(lidar.measures) == 0:
+            time.sleep(.1)
+
+        print("going into therad")
+        t1 = threading.Thread(target=move, args=(motors,))
+        t1.start()
+        print("exit")
+
+        measures = []
+        while True:
+            measures = lidar.measures
+            measures = np.append([float(dx), float(dy), float(dth)], measures)
+
+            lo_c.sendData(measures)
+
+            time.sleep(.2)
+
+    def chariMot(encoder):
+
+        fl = open("leftMotCurve.txt","x")
+        fr = open("rightMotCurve.txt", "x")
+
+
+        for x in range(20,100):
+            motors.setLeft(x/100)
+            motors.setRight(x/100)
+            time.sleep(1)
+
+            fl.write(str(x)+","+str(encoder.phiDotLeft)+"\n")
+            fr.write(str(x) + "," + str(encoder.phiDotRight) + "\n")
+            print("left MotCMD, leftPhiDot "+str(x) + " " + str(encoder.phiDotLeft))
+            print("right MotCMD, rightPhiDot "+str(x) + " " + str(encoder.phiDotRight))
+            print()
+
+        for x in range(100, 20, -1):
+            motors.setLeft(x / 100)
+            motors.setRight(x / 100)
+            time.sleep(1)
+
+            fl.write(str(x) + "," + str(encoder.phiDotLeft) + "\n")
+            fr.write(str(x) + "," + str(encoder.phiDotRight) + "\n")
+            print("left MotCMD, leftPhiDot " + str(x) + " " + str(encoder.phiDotLeft))
+            print("right MotCMD, rightPhiDot " + str(x) + " " + str(encoder.phiDotRight))
+            print()
+
+        fl.close()
+        fr.close()
+
+    def testEncoder(encoder,motors):
+        lastX = 0
+        lastY = 0
+        lastTheta = 0
+
+        t1 = threading.Thread(target=move, args=(motors,))
+        t1.start()
+
+        sumx = 0
+        sumy = 0
+        sumTheta = 0
+
+        for x in range(5):
+            delx = encoder.x - lastX
+            dely = encoder.y - lastY
+            delTheta = encoder.theata - lastTheta
+
+            sumx += delx
+            sumy += dely
+            sumTheta += delTheta
+
+            lastX = encoder.x
+            lastY = encoder.y
+            lastTheta = encoder.theata
+
+            time.sleep(3)
+
+        print("sum x is: " + str(sumx))
+        print("sum y is: " + str(sumy))
+        print("sum theta is: " + str(np.degrees(sumTheta)))
 
     cell_resolution = 50
 
@@ -102,8 +163,8 @@ if __name__ == "__main__":
     # Instantiate Particle Filter
 
 
-    lo_c = lc.LocalizationClient()
-    lo_c.sendData(np.array([float(x), float(y), float(th)]))
+    #lo_c = lc.LocalizationClient()
+    #lo_c.sendData(np.array([float(x), float(y), float(th)]))
 
     try:
         encoder = encoder_mytrial.Encoder()
@@ -113,36 +174,24 @@ if __name__ == "__main__":
 
         PIDleft = PID.PID()
         PIDleft.Kd = 0
-        PIDleft.Ki = .25
-        PIDleft.Kp = .25
+        PIDleft.Ki =  .3
+        PIDleft.Kp = .7
 
         PIDRight = PID.PID()
         PIDRight.Kd = 0
-        PIDRight.Ki = .25
-        PIDRight.Kp = .25
+        PIDRight.Ki = 0.3
+        PIDRight.Kp = .7
 
-        lidar = Lidar.Lidar()
-        lidar.start()
-
-        while len(lidar.measures) == 0:
-            time.sleep(.1)
-
-        print("going into therad")
-        t1 = threading.Thread(target=move, args=(motors,))
-        t1.start()
-        print("exit")
-
-
-        measures = []
-        while True:
-
-            measures = lidar.measures
-            measures = np.append([float(dx), float(dy), float(dth)], measures)
-
-            lo_c.sendData(measures)
-
-            time.sleep(.2)
-
+        Forward(300,encoder)
+        #chariMot(encoder)
+        motors.off()
+        # for x in range(50):
+        #     motors.setRight(.5)
+        #     motors.setLeft(.7)
+        #     time.sleep(.01/10)
+        #     motors.off()
+        #     time.sleep(.4/10)
+        #testEncoder(encoder,motors)
 
 
 
