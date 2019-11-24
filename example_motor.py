@@ -1,10 +1,30 @@
 import time
 from adafruit_motorkit import MotorKit
 from threading import Thread
+import csv
 
 
 class Motor():
 
+    phi2MmapRight = {}
+    phi2MmapLeft = {}
+
+    def __init__(self):
+        with open('rightMotCurve.csv', mode='r') as infileRight:
+            reader = csv.reader(infileRight)
+            self.phi2MmapRight = {float(rows[1]): float(rows[0]) for rows in reader}
+            try:
+                self.phi2MmapRight.pop(0.0)
+            except:
+                print("no 0 key to pop")
+
+        with open('leftMotCurve.csv', mode='r') as infileLeft:
+            reader = csv.reader(infileLeft)
+            self.phi2MmapLeft = {float(rows[1]): float(rows[0]) for rows in reader}
+            try:
+                self.phi2MmapLeft.pop(0.0)
+            except:
+                print("no 0 key to pop")
 
     kit = MotorKit()
 
@@ -16,22 +36,20 @@ class Motor():
 
     def setPhiDotDesiredRight(self,phiDot):
         throt = 0
-        if phiDot < 0:
-            throt = -.3+(.7*phiDot/3.8)
-            throt = max(-1,throt)
+        if phiDot <= 0:
+            throt = 0
         if phiDot > 0:
-            throt = .3+(.7*phiDot/3.8)
+            throt = self.getCMDfromMap(self.phi2MmapRight,phiDot)#.3+(.7*phiDot/3.8)
             throt = min(1,throt)
         #print("Throtle right " + str(throt))
         self.setRight(throt)
 
     def setPhiDotDesiredLeft(self,phiDot):
         throt = 0
-        if phiDot < 0:
-            throt = -.3+(.7*phiDot/3.8)
-            throt = max(-1,throt)
+        if phiDot <= 0:
+            throt = 0
         if phiDot > 0:
-            throt = .3+(.7*phiDot/3.8)
+            throt = self.getCMDfromMap(self.phi2MmapLeft,phiDot)#.3+(.7*phiDot/3.8)
             throt = min(1,throt)
         #print("Throtle left " + str(throt))
         self.setLeft(throt)
@@ -46,6 +64,10 @@ class Motor():
     def off(self):
         self.kit.motor1.throttle = None
         self.kit.motor4.throttle = None
+
+    def getCMDfromMap(self,maping, phi):
+        mydict = maping
+        return mydict[phi] if phi in mydict else mydict[min(mydict.keys(), key=lambda k: abs(k - phi))]/100
 
 #motor1 is left motor; motor4 is right motor
 # throttle must go from -1 to 1
