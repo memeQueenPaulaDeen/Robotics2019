@@ -15,7 +15,7 @@ class Encoder(Thread):
 	leftTime = time.time()
 	rightTime = time.time()
 
-	timeStep = .1
+	timeStep = .2
 	rightCount = 0
 	lastRightCount = 0
 	lastLeftCount = 0

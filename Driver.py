@@ -186,8 +186,8 @@ if __name__ == "__main__":
 		Follower = Follower.Follower(6,encoder,PIDleft,PIDRight,motors)
 
 		targetTh = np.radians(-45)
-		while np.radians(1) < abs(encoder.theata - targetTh):
-			Follower.changeHeading(targetTh,encoder.theata,1.5)
+		while encoder.x_inertial < 300:#np.radians(1) < abs(encoder.theata - targetTh):
+			Follower.lineFollow(np.radians(90),.02,1)
 			print(encoder.theata)
 			print("x inertial " +str(encoder.x_inertial))
 			print("y inertial "+ str(encoder.y_inertial))

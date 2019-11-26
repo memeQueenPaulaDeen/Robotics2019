@@ -24,11 +24,13 @@ class Follower:
 
 
 
-	def lineFollow(self,maxLineAproachAngleDeg,KtheataCMD,kHeadingChange):
-		line = Line(0,0,90)
+	def lineFollow(self,maxLineAproachAngleRad,KtheataCMD,kHeadingChange):
+		line = Line(0,0,np.radians(0))
 
-		err_y = self.getCrossTrackErr(line,self.encoder)
-		thCMD = line.theata - np.arctan(KtheataCMD*err_y)*(2/np.pi)*maxLineAproachAngleDeg#in rad
+		err_y = self.getDistFromLineAsPos(line, self.encoder)[1]
+		print("cross track err " + str(err_y))
+		thCMD = line.theata - np.arctan(KtheataCMD*err_y)*(2/np.pi)*maxLineAproachAngleRad#in rad
+		print("theata CMD: " + str(np.degrees(thCMD)))
 		thCurent = self.encoder.theata
 
 		self.changeHeading(thCMD,thCurent,kHeadingChange)
@@ -56,10 +58,11 @@ class Follower:
 
 
 
-	def getCrossTrackErr(self,line,encoder):
+	def getDistFromLineAsPos(self, line, encoder):
 		ITL = self.p2t(line.x,line.y,line.theata)
 		ITB = self.p2t(encoder.x_inertial,encoder.y_inertial,encoder.theata)
 		LTB = np.matmul(np.linalg.inv(ITL),ITB)
+		#print(LTB)
 		pose_err = self.t2p(LTB)
 		return pose_err
 
@@ -67,7 +70,7 @@ class Follower:
 		return np.array([[np.cos(th), -np.sin(th), x],[ np.sin(th), np.cos(th), y],[ 0, 0, 1]])
 
 	def t2p(self,T):
-		return np.array([T[0, 2], T[1, 2], np.arctan(T[1, 0], T[0, 0])])
+		return np.array([T[0, 2], T[1, 2], np.arctan2(T[1, 0], T[0, 0])])
 
 	def rot(self,th):
 		return np.array([[np.cos(th),-np.sin(th),0],[np.sin(th),np.cos(th),0],[1,1,1]])
