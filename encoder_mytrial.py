@@ -15,7 +15,7 @@ class Encoder(Thread):
 	leftTime = time.time()
 	rightTime = time.time()
 
-	timeStep = .2
+	timeStep = .1
 	rightCount = 0
 	lastRightCount = 0
 	lastLeftCount = 0
@@ -25,8 +25,13 @@ class Encoder(Thread):
 	wheelRadiusCm = 4.5
 	wheelBaseCm = 22
 
-	x = 0
-	y = 0
+	x_body = 0
+	y_body = 0
+
+	# assume Inertial frame origin is start pose
+	x_inertial = 0
+	y_inertial = 0
+
 	theata = 0
 
 	phiDotLeft = 0
@@ -128,8 +133,10 @@ class Encoder(Thread):
 			time.sleep(timeStep)
 
 			deltaX, deltaY, deltaThetaRad, phiDotLeft, phiDotRight = self.getDeltas()
-			self.x = self.x + deltaX
-			self.y = self.y + deltaY
+			self.x_body = self.x_body + deltaX
+			self.y_body = self.y_body + deltaY
+			self.x_inertial = (math.cos(self.theata)*deltaX - math.sin(self.theata)*deltaY) + self.x_inertial
+			self.y_inertial = (math.sin(self.theata)*deltaX + math.cos(self.theata)*deltaY) + self.y_inertial
 			self.theata = self.theata + deltaThetaRad
 			self.phiDotRight = phiDotRight
 			self.phiDotLeft = phiDotLeft

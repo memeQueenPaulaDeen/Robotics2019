@@ -11,6 +11,7 @@ import os
 import RPi.GPIO as GPIO
 import LocalizationClient as lc
 import threading
+import Follower
 
 if __name__ == "__main__":
 
@@ -49,7 +50,7 @@ if __name__ == "__main__":
 	def Forward(dist,encoder,phiCMD):
 
 		#phiCMD = 6
-		while (np.linalg.norm([abs(encoder.x), abs(encoder.y)]) < dist):
+		while (np.linalg.norm([abs(encoder.x_body), abs(encoder.y_body)]) < dist):
 			time.sleep(.2)
 
 			#phiCMD = phiCMD + .1
@@ -61,8 +62,8 @@ if __name__ == "__main__":
 			print("Phi Dot Right is: " + str(encoder.phiDotRight))
 			print("Phi Dot Left is: " + str(encoder.phiDotLeft))
 
-		print("x " + str(encoder.x))
-		print("y " + str(encoder.y))
+		print("x " + str(encoder.x_body))
+		print("y " + str(encoder.y_body))
 		print("theta " +str(np.degrees(encoder.theata)))
 
 	def testLocilization():
@@ -117,6 +118,7 @@ if __name__ == "__main__":
 		fl.close()
 		fr.close()
 
+
 	def testEncoder(encoder,motors):
 		lastX = 0
 		lastY = 0
@@ -130,16 +132,16 @@ if __name__ == "__main__":
 		sumTheta = 0
 
 		for x in range(5):
-			delx = encoder.x - lastX
-			dely = encoder.y - lastY
+			delx = encoder.x_body - lastX
+			dely = encoder.y_body - lastY
 			delTheta = encoder.theata - lastTheta
 
 			sumx += delx
 			sumy += dely
 			sumTheta += delTheta
 
-			lastX = encoder.x
-			lastY = encoder.y
+			lastX = encoder.x_body
+			lastY = encoder.y_body
 			lastTheta = encoder.theata
 
 			time.sleep(3)
@@ -181,13 +183,28 @@ if __name__ == "__main__":
 		PIDRight.Ki = 0.3
 		PIDRight.Kp = .7
 
-		Forward(130,encoder,4)
+		Follower = Follower.Follower(6,encoder,PIDleft,PIDRight,motors)
+
+		targetTh = np.radians(-45)
+		while np.radians(1) < abs(encoder.theata - targetTh):
+			Follower.changeHeading(targetTh,encoder.theata,1.5)
+			print(encoder.theata)
+			print("x inertial " +str(encoder.x_inertial))
+			print("y inertial "+ str(encoder.y_inertial))
+			print("theata: " + str(np.degrees(encoder.theata)))
+			time.sleep(.2)
+
+		print("x inertial " + str(encoder.x_inertial))
+		print("y inertial " + str(encoder.y_inertial))
+		print("theata: " + str(np.degrees(encoder.theata)))
+
+		#Forward(130,encoder,4)
 		#Forward(300, encoder, 4)
 		motors.brake()
 		time.sleep(1)
 		motors.off()
 		#chariMot(encoder)
-		motors.off()
+		#motors.off()
 		# for x in range(50):
 		#     motors.setRight(.5)
 		#     motors.setLeft(.7)
