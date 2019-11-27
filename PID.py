@@ -15,7 +15,7 @@ class PID:
         self.error = desired - mesured
         self.derErr = self.error - olderr
         self.cumErr = self.cumErr + self.error
-        print(desired+self.Kp*self.error+self.Ki*self.cumErr+self.Kd*self.derErr)
+        #print(desired+self.Kp*self.error+self.Ki*self.cumErr+self.Kd*self.derErr)
         controlTarget(desired+self.Kp*self.error+self.Ki*self.cumErr+self.Kd*self.derErr)
 
 
