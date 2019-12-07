@@ -4,6 +4,7 @@ import get_scans_vector as scan
 import Particle_Filter as Pf
 import LocalizationClient as lc
 
+
 def show_map(figure):
     figure.canvas.draw()
     figure.canvas.flush_events()
@@ -97,7 +98,7 @@ if __name__ == "__main__":
     a = Pf.ParticleFilter(file_name, cell_resolution, num_scans, num_particles, resampling, sigma_measure,
                           sigma_pos, sigma_angle, x, y, th)
 
-    lo_c = lc.LocalizationClient()
+    lo_c = lc.LocalizationClient(None)
     lo_c.sendData(np.array([ float(x),float(y),float(th)]))
 
     for i in range(50):
@@ -119,7 +120,8 @@ if __name__ == "__main__":
 
         #a.update_state(dx, dy, dth, measures)
 
-        print(measures)
-        time.sleep(.2)
-        #print("Actual Pose: (", x, ", ", y, ", ", th, ")")
+        print("Lidar Spoof " + str(measures))
+        #time.sleep(.2)
+        print("PF pos Est: " + str(lo_c.reciveMessage()) )
+        print("Actual Pose: (", x, ", ", y, ", ", th, ")")
         #print("Estimated Pose: (", a.x_pos, ", ", a.y_pos, ", ", a.th_pos, ")")

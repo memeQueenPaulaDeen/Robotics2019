@@ -3,7 +3,7 @@ clear;
 map_file_name = 'test_map3a.csv'; %csv occupancy map (0 is free region)
 cell_resolution = 50; %mm
 number_of_scans = 8; 
-number_of_particles = 1000;
+number_of_particles = 5000;
 resampling = 0.1; %from 0 to 1
 
 %this is used when assigning weights to particles
@@ -89,12 +89,15 @@ while true
     
     a.update_state(delta_x,delta_y,delta_theta,mesures);
     
-    a.show_particles(); 
-    a.show_location();
+  %  a.show_particles(); 
+  %  a.show_location();
     
     vert_x = a.x_pos;%current_x;
     vert_y = a.y_pos;%current_y;
     current_th = a.th_pos;
+    
+    dataOut = typecast([a.x_pos,a.y_pos,a.th_pos],'uint8');
+    fwrite(t,dataOut);
     
     for j =1:a.n_angles
         vert_x = [vert_x (current_x + mesures(j)*cosd(current_th+(j-1)*a.angle_resolution)) current_x];
@@ -113,9 +116,9 @@ while true
 %         h_plot_ray.YData = vert_y;
 %     end
     
-    disp('Test')
-    disp(current_th)
-    disp(a.th_pos)
+    %disp('Test')
+    %disp(current_th)
+    %disp(a.th_pos)
     
     catch 
         disp('no read')

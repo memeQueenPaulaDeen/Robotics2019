@@ -31,7 +31,7 @@ class Lidar(threading.Thread):
             data = self.readScans(2)
             try:
                 m = self.getScan(data)
-                self.prettyPrint(m)
+                #self.prettyPrint(m)
                 self.convertMeasures(m)
 
             except:
@@ -49,7 +49,7 @@ class Lidar(threading.Thread):
 
 
     def getScan(self,dataScan):
-        print("this is the scan")
+        #print("this is the scan")
         #print(dataScan)
         measures = {}
         desiredAngles = [[(x*45-2)%360,(x*45+2)%360,x*45] for x in range(8)]
@@ -106,8 +106,8 @@ class Lidar(threading.Thread):
 
 
         except RPLidarException as e:
-            print(e)
-            print("read error")
+            #print(e)
+            #print("read error")
             self.handleDescriptorErr()
             #self.rpLidar.clear_input()
             pass
@@ -122,6 +122,9 @@ class Lidar(threading.Thread):
             m.append([measures[(x*-45)%360][self.distanceIdx],(x*45)%360])
         self.measures = np.array(m)
 
+    def waitForFirstRead(self):
+        while len(self.measures) == 0:
+            time.sleep(.1)
 
     def handleDescriptorErr(self):
         # command = [['reverse',.3]]  # ,['forward',.1]]

@@ -8,6 +8,7 @@ class Motor():
 
     phi2MmapRight = {}
     phi2MmapLeft = {}
+    debug = False
 
     def __init__(self):
         with open('rightMotCurve.csv', mode='r') as infileRight:
@@ -29,10 +30,16 @@ class Motor():
     kit = MotorKit()
 
     def setLeft(self,throt):
-        self.kit.motor1.throttle= throt
+        if not self.debug:
+            self.kit.motor1.throttle= throt
+        else:
+            self.kit.motor1.throttle = None
 
     def setRight(self,throt):
-        self.kit.motor4.throttle = throt
+        if not self.debug:
+            self.kit.motor4.throttle = throt
+        else:
+            self.kit.motor1.throttle = None
 
     def setPhiDotDesiredRight(self,phiDot):
         throt = 0

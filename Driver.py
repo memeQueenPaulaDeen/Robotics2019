@@ -12,6 +12,7 @@ import RPi.GPIO as GPIO
 import LocalizationClient as lc
 import threading
 import Follower
+import Position as Pos
 
 if __name__ == "__main__":
 
@@ -150,11 +151,9 @@ if __name__ == "__main__":
 		print("sum y is: " + str(sumy))
 		print("sum theta is: " + str(np.degrees(sumTheta)))
 
-	cell_resolution = 50
+################# main ########
 
-	x = 5 * cell_resolution
-	y = 45 * cell_resolution
-	th = -90  # must send over -th matlab is clockwise python is counter
+	cell_resolution = 50
 
 	# Define Deltas (Not Constant in Real Life)
 	dx = 0 * cell_resolution
@@ -164,14 +163,30 @@ if __name__ == "__main__":
 	# Instantiate Particle Filter
 
 
-	#lo_c = lc.LocalizationClient()
-	#lo_c.sendData(np.array([float(x), float(y), float(th)]))
 
 	try:
+
+		lidar = Lidar.Lidar()
+		lidar.start()
+		lidar.waitForFirstRead()
+
+		lo_c = lc.LocalizationClient(lidar)
+		#lo_c = None
 		encoder = encoder_mytrial.Encoder()
 		encoder.start()
 
 		motors = example_motor.Motor()
+		#motors.debug = True
+
+		pos = Pos.Position(encoder,lo_c)
+		pos.start_x = 5 * cell_resolution
+		pos.start_y = 5 * cell_resolution
+		pos.start_th = np.radians(90)
+		encoder.theata = pos.start_th
+
+		lo_c.sendStartPos(float(pos.start_x), float(pos.start_y), float(pos.start_th))
+
+		lo_c.startCommsThread(pos)
 
 		PIDleft = PID.PID()
 		PIDleft.Kd = 0
@@ -183,15 +198,14 @@ if __name__ == "__main__":
 		PIDRight.Ki = 0.3
 		PIDRight.Kp = .7
 
-		Follower = Follower.Follower(6,encoder,PIDleft,PIDRight,motors)
 
-		targetTh = np.radians(-45)
-		while encoder.x_inertial < 300:#np.radians(1) < abs(encoder.theata - targetTh):
-			Follower.lineFollow(np.radians(90),.02,1)
-			print(encoder.theata)
-			print("x inertial " +str(encoder.x_inertial))
-			print("y inertial "+ str(encoder.y_inertial))
-			print("theata: " + str(np.degrees(encoder.theata)))
+		follower = Follower.Follower(6,encoder,PIDleft,PIDRight,motors)
+
+		while abs(encoder.x_inertial + encoder.y_inertial) < 100:#np.radians(1) < abs(encoder.theata - targetTh):
+			follower.lineFollow(np.radians(90),.02,1,Follower.Line(250,250,np.radians(90)),pos.getPoseLocalizationClient())
+			print("x inertial " + str(pos.localizationClient.x))
+			print("y inertial " + str(pos.localizationClient.y))
+			print("theata: " + str(np.degrees(pos.localizationClient.th)))
 			time.sleep(.2)
 
 		print("x inertial " + str(encoder.x_inertial))

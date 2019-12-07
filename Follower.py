@@ -6,6 +6,7 @@ import PID
 class Follower:
 
 	phiDotSet = 0
+	pos = None
 	encoder = None
 	PIDleft = None
 	PIDright =None
@@ -24,14 +25,16 @@ class Follower:
 
 
 
-	def lineFollow(self,maxLineAproachAngleRad,KtheataCMD,kHeadingChange):
-		line = Line(0,0,np.radians(0))
+	def lineFollow(self,maxLineAproachAngleRad,KtheataCMD,kHeadingChange,line,pose):
+		xIDX = 0
+		yIDX = 1
+		thIDX = 2
 
-		err_y = self.getDistFromLineAsPos(line, self.encoder)[1]
+		err_y = self.getDistFromLineAsPos(line, pose)[1]
 		print("cross track err " + str(err_y))
 		thCMD = line.theata - np.arctan(KtheataCMD*err_y)*(2/np.pi)*maxLineAproachAngleRad#in rad
 		print("theata CMD: " + str(np.degrees(thCMD)))
-		thCurent = self.encoder.theata
+		thCurent = pose[thIDX]
 
 		self.changeHeading(thCMD,thCurent,kHeadingChange)
 
@@ -58,9 +61,13 @@ class Follower:
 
 
 
-	def getDistFromLineAsPos(self, line, encoder):
+	def getDistFromLineAsPos(self, line, pose):
+		xIDX = 0
+		yIDX = 1
+		thIDX = 2
+
 		ITL = self.p2t(line.x,line.y,line.theata)
-		ITB = self.p2t(encoder.x_inertial,encoder.y_inertial,encoder.theata)
+		ITB = self.p2t(pose[xIDX],pose[yIDX],pose[thIDX])
 		LTB = np.matmul(np.linalg.inv(ITL),ITB)
 		#print(LTB)
 		pose_err = self.t2p(LTB)
