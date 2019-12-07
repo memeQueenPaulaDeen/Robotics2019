@@ -3,7 +3,7 @@ clear;
 map_file_name = 'test_map3a.csv'; %csv occupancy map (0 is free region)
 cell_resolution = 50; %mm
 number_of_scans = 8; 
-number_of_particles = 5000;
+number_of_particles = 1000;
 resampling = 0.1; %from 0 to 1
 
 %this is used when assigning weights to particles
