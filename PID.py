@@ -1,14 +1,13 @@
-import example_motor
-
 class PID:
 
     error = 0
-    #cumErrList = []
     cumErr = 0
     derErr = 0
-    Kp = 0
-    Ki = 0
-    Kd = 0
+    
+    def __init__(self, Kp, Ki, Kd):
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kd = Kd
 
     def control(self,desired,mesured,controlTarget):
         olderr = self.error
