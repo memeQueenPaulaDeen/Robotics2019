@@ -24,10 +24,11 @@ class Follower:
         self.k_theta_cmd = k_theta_cmd
         self.k_heading_change = k_heading_change
     
-    def followLine(self, line):
-                
+    def followLine(self, line, pose):
+        thIDX = 2
+
         # Determine Cross-Track Error
-        err_y = self.getDistFromLineAsPos(line, self.encoder)[1]
+        err_y = self.getDistFromLineAsPos(line, pose)[1]
         print("cross track err " + str(err_y))
         
         # Get Theta-Command
@@ -35,22 +36,11 @@ class Follower:
         print("Theta CMD: " + str(np.degrees(thCMD)))
         
         # Get Current Theta from Encoders
-        thCurent = self.encoder.theata
+        thCurent = pose[thIDX]
         
         # Change Heading Command
         self.changeHeading(thCMD,thCurent,self.k_heading_change)
         
-    
-    def lineFollow(self,maxLineAproachAngleRad,KtheataCMD,kHeadingChange):
-        line = Line(0,0,np.radians(0))
-
-        err_y = self.getDistFromLineAsPos(line, self.encoder)[1]
-        print("cross track err " + str(err_y))
-        thCMD = line.theata - np.arctan(KtheataCMD*err_y)*(2/np.pi)*maxLineAproachAngleRad#in rad
-        print("theata CMD: " + str(np.degrees(thCMD)))
-        thCurent = self.encoder.theata
-
-        self.changeHeading(thCMD,thCurent,kHeadingChange)
 
     def changeHeading(self,thCMD,thCurent,kHeadingChange):
         th_err = thCMD - thCurent
@@ -73,9 +63,19 @@ class Follower:
         self.PIDleft.control(phiDotLeft, self.encoder.phiDotLeft, self.motors.setPhiDotDesiredLeft)
         self.PIDright.control(phiDotRight, self.encoder.phiDotRight, self.motors.setPhiDotDesiredRight)
 
+    def getDistFromLineAsPos(self, line, pose):
+        xIDX = 0
+        yIDX = 1
+        thIDX = 2
 
+        ITL = self.p2t(line.x, line.y, line.theata)
+        ITB = self.p2t(pose[xIDX], pose[yIDX], pose[thIDX])
+        LTB = np.matmul(np.linalg.inv(ITL), ITB)
+        # print(LTB)
+        pose_err = self.t2p(LTB)
+        return pose_err
 
-    def getDistFromLineAsPos(self, line, encoder):
+    def getDistFromLineAsPos_ENC(self, line, encoder):
         ITL = self.p2t(line.x,line.y,line.theta)
         ITB = self.p2t(encoder.x_inertial,encoder.y_inertial,encoder.theata)
         LTB = np.matmul(np.linalg.inv(ITL),ITB)
@@ -91,17 +91,3 @@ class Follower:
 
     def rot(self,th):
         return np.array([[np.cos(th),-np.sin(th),0],[np.sin(th),np.cos(th),0],[1,1,1]])
-        
-
-
-
-class Line():
-
-    x = 0
-    y = 0
-    theata = 0
-
-    def __init__(self,x,y,theata):
-        self.x = x
-        self.y = y
-        self.theata = theata

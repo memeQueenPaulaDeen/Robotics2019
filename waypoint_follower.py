@@ -8,6 +8,9 @@ import Encoder
 import Motor
 import Follower
 
+
+
+
 class Line():
 
     def __init__(self,x,y,theta):
@@ -85,10 +88,10 @@ if __name__ == "__main__":
             print("n = " + str(n))
             print("Halfplane -> " + str(np.matmul((p-r).transpose(), n)))
                         
-            while np.matmul((p-r).transpose(), n) + 35 < 0:
+            while np.matmul((p-r).transpose(), n) + 20 < 0:
                 
                 # Follow Line
-                Follower.followLine(line)
+                Follower.followLine(line,[encoder.x_inertial,encoder.y_inertial,encoder.theata])
                 
                 # Print Stuff
                 # print("p = " + str(p))

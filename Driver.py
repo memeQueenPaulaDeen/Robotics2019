@@ -1,8 +1,8 @@
 import signal
 
-import encoder_mytrial
+import Encoder
 import time
-import example_motor
+import Motor
 import PID
 import numpy as np
 import math
@@ -13,6 +13,7 @@ import LocalizationClient as lc
 import threading
 import Follower
 import Position as Pos
+import waypoint_follower
 
 if __name__ == "__main__":
 
@@ -172,10 +173,10 @@ if __name__ == "__main__":
 
 		lo_c = lc.LocalizationClient(lidar)
 		#lo_c = None
-		encoder = encoder_mytrial.Encoder()
+		encoder = Encoder.Encoder()
 		encoder.start()
 
-		motors = example_motor.Motor()
+		motors = Motor.Motor()
 		#motors.debug = True
 
 		pos = Pos.Position(encoder,lo_c)
@@ -188,21 +189,22 @@ if __name__ == "__main__":
 
 		lo_c.startCommsThread(pos)
 
-		PIDleft = PID.PID()
-		PIDleft.Kd = 0
-		PIDleft.Ki =  .25
-		PIDleft.Kp = .6
+		# Init PID Controllers
+		PIDleft = PID.PID(Kp=0.6, Ki=0.25, Kd=0)
+		PIDRight = PID.PID(Kp=0.7, Ki=0.3, Kd=0)
 
-		PIDRight = PID.PID()
-		PIDRight.Kd = 0
-		PIDRight.Ki = 0.3
-		PIDRight.Kp = .7
+		# Define Line Following Parameters
+		phi_dot_set = 6
+		chi_inf = np.radians(90)
+		k_theta_cmd = 0.02
+		k_heading_change = 1
+		follower = Follower.Follower(phi_dot_set, encoder, PIDleft, PIDRight, motors, chi_inf, k_theta_cmd,
+		                             k_heading_change)
 
 
-		follower = Follower.Follower(6,encoder,PIDleft,PIDRight,motors)
 
 		while abs(encoder.x_inertial + encoder.y_inertial) < 100:#np.radians(1) < abs(encoder.theata - targetTh):
-			follower.lineFollow(np.radians(90),.02,1,Follower.Line(250,250,np.radians(90)),pos.getPoseLocalizationClient())
+			follower.followLine(waypoint_follower.Line(250,250,np.radians(90)),pos.getPoseLocalizationClient())
 			print("x inertial " + str(pos.localizationClient.x))
 			print("y inertial " + str(pos.localizationClient.y))
 			print("theata: " + str(np.degrees(pos.localizationClient.th)))
