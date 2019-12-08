@@ -41,8 +41,9 @@ if __name__ == "__main__":
         Follower = Follower.Follower(phi_dot_set, encoder, PIDleft, PIDRight, motors, chi_inf, k_theta_cmd, k_heading_change)
         
         # Define Waypoints
-        position = [0,0]
-        waypoint_array = np.array([position, [100, 0], [100, 100], [200, 100], [200, 100]])
+        start_position = np.array([0, 0])
+        p = None
+        waypoint_array = np.array([start_position, [80, 0],[80, -190], [80, -190]])
         num_waypoints = len(waypoint_array) - 2
         
         # Iterate Through Waypoints
@@ -69,17 +70,22 @@ if __name__ == "__main__":
                 q_i_curr = (w_next - w_curr)/np.linalg.norm(w_next - w_curr)
             
             n = (q_i_prev + q_i_curr)/np.linalg.norm(q_i_prev + q_i_curr)
-            p = position;
-            r = w_curr;
+
+            if i == 1:
+                p = start_position
+            else:
+                p = np.array([encoder.x_inertial,encoder.y_inertial])
+
+            r = w_curr
             
-            #print("q_prev = " + str(q_i_prev))
-            #print("q_curr = " + str(q_i_curr))
-            #print("p = " + str(p))
-            #print("r = " + str(r))
-            #print("n = " + str(n))
+            print("q_prev = " + str(q_i_prev))
+            print("q_curr = " + str(q_i_curr))
+            print("p = " + str(p))
+            print("r = " + str(r))
+            print("n = " + str(n))
             print("Halfplane -> " + str(np.matmul((p-r).transpose(), n)))
                         
-            while np.matmul((p-r).transpose(), n) < 0:
+            while np.matmul((p-r).transpose(), n) + 35 < 0:
                 
                 # Follow Line
                 Follower.followLine(line)
