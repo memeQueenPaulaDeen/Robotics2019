@@ -7,6 +7,7 @@ import RPi.GPIO as GPIO
 import Encoder
 import Motor
 import Follower
+import Position
 
 
 
@@ -26,9 +27,9 @@ if __name__ == "__main__":
     
     try:
         # Init Encoders
-        encoder = Encoder.Encoder()
-        encoder.start()
-        
+
+        pos = Position.Position(0,0,0)
+
         # Init Motors
         motors = Motor.Motor()
         
@@ -41,7 +42,7 @@ if __name__ == "__main__":
         chi_inf = np.radians(90)
         k_theta_cmd = 0.02
         k_heading_change = 1
-        Follower = Follower.Follower(phi_dot_set, encoder, PIDleft, PIDRight, motors, chi_inf, k_theta_cmd, k_heading_change)
+        Follower = Follower.Follower(phi_dot_set, pos.encoder, PIDleft, PIDRight, motors, chi_inf, k_theta_cmd, k_heading_change)
         
         # Define Waypoints
         start_position = np.array([0, 0])
@@ -77,7 +78,7 @@ if __name__ == "__main__":
             if i == 1:
                 p = start_position
             else:
-                p = np.array([encoder.x_inertial,encoder.y_inertial])
+                p = np.array([pos.encoder.x_inertial,pos.encoder.y_inertial])
 
             r = w_curr
             
@@ -91,7 +92,7 @@ if __name__ == "__main__":
             while np.matmul((p-r).transpose(), n) + 20 < 0:
                 
                 # Follow Line
-                Follower.followLine(line,[encoder.x_inertial,encoder.y_inertial,encoder.theata])
+                Follower.followLine(line,[pos.encoder.x_inertial,pos.encoder.y_inertial,pos.encoder.theata])
                 
                 # Print Stuff
                 # print("p = " + str(p))
@@ -100,7 +101,7 @@ if __name__ == "__main__":
                 print("Halfplane -> " + str(np.matmul((p-r).transpose(), n)))
                 
                 # Update Position
-                p = [encoder.x_inertial, encoder.y_inertial]
+                p = [pos.encoder.x_inertial, pos.encoder.y_inertial]
                 
                 # Sleep
                 time.sleep(.2)

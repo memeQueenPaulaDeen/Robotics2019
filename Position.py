@@ -1,17 +1,20 @@
 
 import numpy as np
+import Encoder
+import LocalizationClient
 
 class Position():
 
 	encoder = None
 	localizationClient = None
-	start_x = 0
-	start_y = 0
-	start_th = 0
 
-	def __init__(self,ecoder,localizationClient):
-		self.encoder = ecoder
-		self.localizationClient = localizationClient
+
+	def __init__(self,start_x,start_y,start_th):
+		self.encoder = Encoder.Encoder()
+		self.encoder.start()
+		self.localizationClient = LocalizationClient.LocalizationClient #idk
+
+		#init start x y th for encoder and Loc Client
 
 
 	def getPoseEcoder(self): # always inertial frame
