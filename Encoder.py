@@ -4,6 +4,7 @@ import RPi.GPIO as GPIO
 import threading
 from threading import Thread
 import math
+import numpy as np
 
 class Encoder(Thread):
 	GPIO.setmode(GPIO.BCM)
@@ -29,13 +30,25 @@ class Encoder(Thread):
 	y_body = 0
 
 	# assume Inertial frame origin is start pose
+	x_inertial_enc = 0
+	y_inertial_enc = 0
+	theata_enc = 0
+
 	x_inertial = 0
 	y_inertial = 0
-
 	theata = 0
 
 	phiDotLeft = 0
 	phiDotRight = 0
+
+	start_x_cm = None
+	start_y_cm = None
+	start_th = None
+
+	# def __init__(self,):
+	# 	Thread.__init__() #todo
+
+
 
 	def run(self):
 		pin_A_left = 17
@@ -135,10 +148,29 @@ class Encoder(Thread):
 			deltaX, deltaY, deltaThetaRad, phiDotLeft, phiDotRight = self.getDeltas()
 			self.x_body = self.x_body + deltaX
 			self.y_body = self.y_body + deltaY
-			self.x_inertial = (math.cos(self.theata)*deltaX - math.sin(self.theata)*deltaY) + self.x_inertial
-			self.y_inertial = (math.sin(self.theata)*deltaX + math.cos(self.theata)*deltaY) + self.y_inertial
-			self.theata = self.theata + deltaThetaRad
+			self.x_inertial_enc = (math.cos(self.theata_enc) * deltaX - math.sin(self.theata_enc) * deltaY) + self.x_inertial_enc
+			self.y_inertial_enc = (math.sin(self.theata_enc) * deltaX + math.cos(self.theata_enc) * deltaY) + self.y_inertial_enc
+			self.theata_enc = self.theata_enc + deltaThetaRad
 			self.phiDotRight = phiDotRight
 			self.phiDotLeft = phiDotLeft
 
+			#do transform
+			eTb = self.p2t(self.x_inertial_enc, self.y_inertial_enc, self.theata_enc)
+			iTe = self.p2t(self.start_x_cm, self.start_y_cm, self.start_th)
+			iTb = np.matmul(iTe, eTb)
+			newPose = self.t2p(iTb)
+			print("new Pose = " + str(newPose))
+			self.x_inertial = newPose[0]
+			self.y_inertial = newPose[1]
+			self.theata = newPose[2]
 
+
+	def p2t(self, x, y, th):
+		return np.array([[np.cos(th), -np.sin(th), x], [np.sin(th), np.cos(th), y], [0, 0, 1]])
+
+	def t2p(self, T):
+		return np.array([T[0, 2], T[1, 2], np.arctan2(T[1, 0], T[0, 0])])
+
+	def Trnasform(self,pos):
+
+		encTinert = self.p2t(pos.start_x_cm,pos.start_y_cm,pos.start_th)

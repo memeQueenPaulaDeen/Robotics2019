@@ -50,8 +50,8 @@ while flag
             raw_data = fread(t, t.BytesAvailable);
             data = typecast(uint8(raw_data), 'double');
             current_x = data(1);
-            current_y = a.cell_size*a.rows - data(2);
-            current_th = -data(3);
+            current_y = data(2);
+            current_th = data(3);
             flag = false;
         end
 end
@@ -76,12 +76,12 @@ while true
             raw_data = fread(t, t.BytesAvailable);
             data = typecast(uint8(raw_data), 'double');
             
-            delta_x = data(1);
-            delta_y = -data(2);
-            delta_theta = -data(3); %assumes incomeing data is counter clockwise
+            delta_x = data(1)
+            delta_y = data(2)
+            delta_theta = data(3) %assumes incomeing data is counter clockwise
             
-            mesures = data(end-15:2:end) %force it to give only last scan
-            angles = data(end-14:2:end) % force it to give only last scan)
+            mesures = data(end-15:2:end); %force it to give only last scan
+            angles = data(end-14:2:end); % force it to give only last scan)
             flag = false;
         end
         pause(.02);
@@ -89,8 +89,8 @@ while true
     
     a.update_state(delta_x,delta_y,delta_theta,mesures);
     
-  %  a.show_particles(); 
-  %  a.show_location();
+   a.show_particles(); 
+   a.show_location();
     
     vert_x = a.x_pos;%current_x;
     vert_y = a.y_pos;%current_y;

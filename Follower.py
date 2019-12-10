@@ -24,7 +24,7 @@ class Follower:
         self.k_theta_cmd = k_theta_cmd
         self.k_heading_change = k_heading_change
     
-    def followLine(self, line, pose):
+    def followLine(self,line,pose):
         thIDX = 2
 
         # Determine Cross-Track Error
@@ -68,7 +68,7 @@ class Follower:
         yIDX = 1
         thIDX = 2
 
-        ITL = self.p2t(line.x, line.y, line.theata)
+        ITL = self.p2t(line.x, line.y, line.theta)
         ITB = self.p2t(pose[xIDX], pose[yIDX], pose[thIDX])
         LTB = np.matmul(np.linalg.inv(ITL), ITB)
         # print(LTB)
