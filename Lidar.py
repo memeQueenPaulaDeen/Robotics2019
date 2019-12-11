@@ -118,8 +118,9 @@ class Lidar(threading.Thread):
 
     def convertMeasures(self,measures):
         m = []
-        for x in range(8):
-            m.append([measures[(x*-45)%360][self.distanceIdx],(x*45)%360])
+        num = 8
+        for x in range(num):
+            m.append([measures[(x*-360/num)%360][self.distanceIdx],(x*360/num)%360])
         self.measures = np.array(m)
 
     def waitForFirstRead(self):

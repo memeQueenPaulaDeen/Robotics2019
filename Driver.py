@@ -132,11 +132,11 @@ if __name__ == "__main__":
 
 	try:
 
-		#lidar = Lidar.Lidar()
-		#lidar.start()
-		#lidar.waitForFirstRead()
+		lidar = Lidar.Lidar()
+		lidar.start()
+		lidar.waitForFirstRead()
 
-		#lo_c = lc.LocalizationClient(lidar)
+		lo_c = lc.LocalizationClient(lidar)
 
 
 		motors = Motor.Motor()
@@ -153,14 +153,14 @@ if __name__ == "__main__":
 
 		pos = Pos.Position(start_x_cm,start_y_cm,start_th)
 
-		#lo_c.sendStartPos(start_x_mm,start_y_mm,start_th)
-		#lo_c.startCommsThread(pos)
+		lo_c.sendStartPos(start_x_mm,start_y_mm,start_th)
+		lo_c.startCommsThread(pos)
 
 		# Init PID Controllers
 		PIDleft = PID.PID(Kp=0.6, Ki=0.25, Kd=0)
 		PIDRight = PID.PID(Kp=0.7, Ki=0.3, Kd=0)
 
-		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[0,100]])
+		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[30,190]])
 
 		wpf.followWaypoints()
 
