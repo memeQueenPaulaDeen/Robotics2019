@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
 
 		motors = Motor.Motor()
-		motors.debug = True
+		motors.debug = False
 
 
 		start_x_mm = 1000 #* cell_resolution

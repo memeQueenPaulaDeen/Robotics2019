@@ -51,14 +51,21 @@ class Lidar(threading.Thread):
         #print("this is the scan")
         #print(dataScan)
         measures = {}
-        desiredAngles = [[(x*360/self.numScans-3)%360,(x*360/self.numScans+3)%360,x*360/self.numScans] for x in range(self.numScans)]
-        for data in dataScan:
-            for reading in data:
-                for angles in desiredAngles:
-                    if (reading[self.angleIdx] > angles[0] and reading[self.angleIdx] < angles[1]) or \
-                        (angles == desiredAngles[0] and (reading[self.angleIdx] > angles[0] or reading[self.angleIdx] < angles[1])):
-                        measures.update({angles[2]:reading})
+        desiredAngles = [x*360/self.numScans for x in range(self.numScans)]
 
+        for scan in dataScan:
+            angles = [reading[self.angleIdx] for reading in scan]
+            distances = [reading[self.distanceIdx] for reading in scan]
+
+            for angle in desiredAngles:
+
+                min_index = angles.index(min(angles,key=lambda x:180-abs(abs(x-angle) - 180)))
+
+                measures.update({angle: [15, angles[min_index], distances[min_index]]})
+
+
+
+        #print(measures)
         return measures
 
                 #if reading[self.angleIdx] < 5 or reading[self.angleIdx] >355
