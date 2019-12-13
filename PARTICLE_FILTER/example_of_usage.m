@@ -2,7 +2,7 @@ clear;
 
 map_file_name = 'test_map3a.csv'; %csv occupancy map (0 is free region)
 cell_resolution = 50; %mm
-number_of_scans = 8; 
+number_of_scans = 16; 
 number_of_particles = 1000;
 resampling = 0.1; %from 0 to 1
 
@@ -59,7 +59,7 @@ end
 
 while true
     
-    try 
+    %try 
     current_x = current_x + delta_x;
     current_y = current_y + delta_y;
     current_th = current_th + delta_theta;
@@ -80,21 +80,28 @@ while true
             delta_y = data(2)
             delta_theta = data(3) %assumes incomeing data is counter clockwise
             
-            mesures = data(end-15:2:end); %force it to give only last scan
-            angles = data(end-14:2:end); % force it to give only last scan)
+            mesures = data(end-(2*number_of_scans-1):2:end); %force it to give only last scan
+            angles = data(end-(2*number_of_scans-2):2:end); % force it to give only last scan)
+            
+%             mesures = data(end-(2*number_of_scans-1):2:end); %force it to give only last scan
+%             angles = data(end-(2*number_of_scans-2):2:end); % force it to give only last scan)
             flag = false;
         end
         pause(.02);
     end
+    
+    %mesures = circshift(mesures,2);
+    
+    
     
     a.update_state(delta_x,delta_y,delta_theta,mesures);
     
    a.show_particles(); 
    a.show_location();
     
-    vert_x = a.x_pos;%current_x;
-    vert_y = a.y_pos;%current_y;
-    current_th = a.th_pos;
+    vert_x = current_x;
+    vert_y = current_y;
+    %current_th = a.th_pos;
     
     dataOut = typecast([a.x_pos,a.y_pos,a.th_pos],'uint8');
     fwrite(t,dataOut);
@@ -104,25 +111,25 @@ while true
         vert_y = [vert_y (current_y + mesures(j)*sind(current_th+(j-1)*a.angle_resolution)) current_y];
     end    
 
-%     if~ishandle(h_pos)
-%         h_pos = quiver(current_x,current_y,a.cell_size*cosd(current_th),a.cell_size*sind(current_th),'AutoScale','off','LineWidth',5,'Color','b');
-%         h_plot_ray = plot(vert_x,vert_y,'b');
-%     else
-%         h_pos.XData = current_x;
-%         h_pos.YData = current_y;
-%         h_pos.UData = a.cell_size*cosd(current_th);
-%         h_pos.VData = a.cell_size*sind(current_th);
-%         h_plot_ray.XData = vert_x;
-%         h_plot_ray.YData = vert_y;
-%     end
+    if~ishandle(h_pos)
+        h_pos = quiver(current_x,current_y,a.cell_size*cosd(current_th),a.cell_size*sind(current_th),'AutoScale','off','LineWidth',5,'Color','b');
+        h_plot_ray = plot(vert_x,vert_y,'b');
+    else
+        h_pos.XData = current_x;
+        h_pos.YData = current_y;
+        h_pos.UData = a.cell_size*cosd(current_th);
+        h_pos.VData = a.cell_size*sind(current_th);
+        h_plot_ray.XData = vert_x;
+        h_plot_ray.YData = vert_y;
+    end
     
     %disp('Test')
     %disp(current_th)
     %disp(a.th_pos)
     
-    catch 
-        disp('no read')
-    end
+    %catch 
+    %    disp('no read')
+    %end
     
     %pause(delta_t);
 end

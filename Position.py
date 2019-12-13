@@ -19,6 +19,9 @@ class Position():
 		self.start_x_cm = start_x_cm
 		self.start_y_cm = start_y_cm
 		self.start_th = start_th
+		self.encoder.x_inertial = start_x_cm
+		self.encoder.y_inertial = start_y_cm
+		self.encoder.theata = start_th
 
 		self.encoder.start_x_cm = start_x_cm
 		self.encoder.start_y_cm = start_y_cm

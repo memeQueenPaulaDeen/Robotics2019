@@ -1,17 +1,13 @@
-import signal
 
-import Encoder
 import time
 import Motor
 import PID
 import numpy as np
 import math
 import Lidar
-import os
 import RPi.GPIO as GPIO
 import LocalizationClient as lc
 import threading
-import Follower
 import Position as Pos
 import waypoint_follower
 
@@ -134,33 +130,37 @@ if __name__ == "__main__":
 
 		lidar = Lidar.Lidar()
 		lidar.start()
+		print("waiting for lidar")
 		lidar.waitForFirstRead()
+		print("done waiting for lidar")
 
 		lo_c = lc.LocalizationClient(lidar)
 
 
 		motors = Motor.Motor()
-		motors.debug = False
+		motors.debug = True
 
 
-		start_x_mm = 0 #* cell_resolution
+		start_x_mm = 1000 #* cell_resolution
 		start_x_cm =start_x_mm/10
 
-		start_y_mm = 0 #* cell_resolution
+		start_y_mm = 250 #* cell_resolution
 		start_y_cm = start_y_mm/10
 
-		start_th = np.radians(90)
+		start_th = np.radians(180)
 
 		pos = Pos.Position(start_x_cm,start_y_cm,start_th)
 
 		lo_c.sendStartPos(start_x_mm,start_y_mm,start_th)
+		time.sleep(2)
 		lo_c.startCommsThread(pos)
+		#logger = Logger.Logger('.//',pos)
 
 		# Init PID Controllers
 		PIDleft = PID.PID(Kp=0.6, Ki=0.25, Kd=0)
 		PIDRight = PID.PID(Kp=0.7, Ki=0.3, Kd=0)
 
-		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[30,190]])
+		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[20,25],[30,190]])
 
 		wpf.followWaypoints()
 

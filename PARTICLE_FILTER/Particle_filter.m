@@ -212,16 +212,27 @@ classdef Particle_filter<handle
             ylim([-10*this_loc.cell_size max_lim + 10*this_loc.cell_size]);
             
             hold on;
-            for i = 1:this_loc.rows
-                for j = 1:this_loc.cols
-                    if this_loc.grid_map(i,j)~=0
-                        fill([this_loc.cell_size*(j-1) this_loc.cell_size*j...
-                            this_loc.cell_size*j this_loc.cell_size*(j-1)],...
-                        [this_loc.cell_size*(i-1) this_loc.cell_size*(i-1)...
-                        this_loc.cell_size*i this_loc.cell_size*i],'r');
-                    end
-                end
-            end
+            
+            help_map = this_loc.grid_map;
+            help_map(help_map ~= 0) = 1;
+            help_map(help_map == 0) = NaN;
+            
+            xx = this_loc.cell_size/2: this_loc.cell_size:this_loc.cell_size*this_loc.cols - (this_loc.cell_size/2);
+            yy = this_loc.cell_size/2: this_loc.cell_size:this_loc.cell_size*this_loc.rows - (this_loc.cell_size/2);
+            [XX, YY] = meshgrid(xx, yy);
+            XX = XX.*help_map;
+            YY = YY.*help_map;
+            scatter(XX(:),YY(:),'k','filled')
+            %for i = 1:this_loc.rows
+            %    for j = 1:this_loc.cols
+            %        if this_loc.grid_map(i,j)~=0
+            %            fill([this_loc.cell_size*(j-1) this_loc.cell_size*j...
+            %                this_loc.cell_size*j this_loc.cell_size*(j-1)],...
+            %            [this_loc.cell_size*(i-1) this_loc.cell_size*(i-1)...
+            %            this_loc.cell_size*i this_loc.cell_size*i],'r');
+            %        end
+            %   end
+            %end
         end
         
         function show_location(this_loc)        

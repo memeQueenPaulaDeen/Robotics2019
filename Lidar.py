@@ -5,7 +5,6 @@ import sys
 import os
 import signal
 import RPi.GPIO as GPIO
-import example_motor
 import numpy as np
 
 
@@ -20,7 +19,7 @@ class Lidar(threading.Thread):
     ml = None
     mr = None
     measures = []
-
+    numScans = 16
 
 
     def run(self):
@@ -52,7 +51,7 @@ class Lidar(threading.Thread):
         #print("this is the scan")
         #print(dataScan)
         measures = {}
-        desiredAngles = [[(x*45-2)%360,(x*45+2)%360,x*45] for x in range(8)]
+        desiredAngles = [[(x*360/self.numScans-3)%360,(x*360/self.numScans+3)%360,x*360/self.numScans] for x in range(self.numScans)]
         for data in dataScan:
             for reading in data:
                 for angles in desiredAngles:
@@ -113,14 +112,14 @@ class Lidar(threading.Thread):
             pass
 
     def prettyPrint(self,measures):
-        for x in range(8):
-            print(measures[x*45])
+        for x in range(self.numScans):
+            print(measures[x*360/self.numScans])
 
     def convertMeasures(self,measures):
         m = []
-        num = 8
+        num = self.numScans
         for x in range(num):
-            m.append([measures[(x*-360/num)%360][self.distanceIdx],(x*360/num)%360])
+            m.append([measures[(x*-360/num)%360][self.distanceIdx],(x*360/num)%360])#reverse scan order (- 45 first)
         self.measures = np.array(m)
 
     def waitForFirstRead(self):
