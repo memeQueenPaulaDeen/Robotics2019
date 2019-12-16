@@ -48,7 +48,7 @@ class WaypointFollower():
             # Define Line Following Parameters
             phi_dot_set = 6
             chi_inf = np.radians(90)
-            k_theta_cmd = 0.02
+            k_theta_cmd = 0.03
             k_heading_change = 1
             follower = Follower.Follower(phi_dot_set, self.pos.encoder, self.PIDleft, self.PIDRight, self.motors, chi_inf, k_theta_cmd,
                                          k_heading_change)
@@ -112,7 +112,7 @@ class WaypointFollower():
                     #print("Halfplane -> " + str(np.matmul((p - r).transpose(), n)))
 
                     # Update Position
-                    p = [self.pos.encoder.x_inertial, self.pos.encoder.y_inertial]
+                    p = [self.pos.X_fused, self.pos.Y_fused]
 
                     # Sleep
                     time.sleep(.2)

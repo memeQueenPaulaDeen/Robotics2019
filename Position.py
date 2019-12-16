@@ -18,19 +18,12 @@ class Position():
 
 
 	def __init__(self,start_x_cm,start_y_cm,start_th,loc):
-		self.encoder = Encoder.Encoder()
+		self.encoder = Encoder.Encoder(start_x_cm,start_y_cm,start_th)
 		self.encoder.start()
 
 		self.start_x_cm = start_x_cm
 		self.start_y_cm = start_y_cm
 		self.start_th = start_th
-		self.encoder.x_inertial = start_x_cm
-		self.encoder.y_inertial = start_y_cm
-		self.encoder.theata = start_th
-
-		self.encoder.start_x_cm = start_x_cm
-		self.encoder.start_y_cm = start_y_cm
-		self.encoder.start_th = start_th
 
 		self.localizationClient = loc#idk
 
@@ -42,15 +35,16 @@ class Position():
 		while True:
 			delta_dist = np.linalg.norm([self.localizationClient.x_cm - self.encoder.x_inertial,
 			                             self.localizationClient.y_cm - self.encoder.y_inertial])
+			delta_th = abs(self.localizationClient.th - self.encoder.theata)
 
-			r = .5
-			if delta_dist > 15 or self.getPoseLocalizationClient() != prevLocPose:#self.encoder.phiDotSet * self.encoder.wheelRadiusCm * self.localizationClient.delta_t:
+			r = .1
+			if delta_dist > 15 or delta_th > np.radians(30) or self.getPoseLocalizationClient() != prevLocPose:#self.encoder.phiDotSet * self.encoder.wheelRadiusCm * self.localizationClient.delta_t:
 				r = 0
 
 			fusedPose = np.dot(r,self.getPoseLocalizationClient()) + np.dot((1-r),self.getPoseEcoder())
 			if r == 0:
 				print("fusedPose " + str(fusedPose) + " from encoders " +
-				      " delta_dist > 25 is " + str(delta_dist > 25) +
+				      " delta_dist > 25 is " + str(delta_dist > 15) +
 				      " self.getPoseLocalizationClient() != prevLocPose " +
 				      str(self.getPoseLocalizationClient() != prevLocPose))
 			else:
@@ -76,3 +70,9 @@ class Position():
 
 	def getStartPos(self):
 		return [self.start_x_cm,self.start_y_cm,self.start_th]
+
+	def getDeltaTh(self, th_old, th_new):
+		if np.sign(th_old) != np.sign(th_new):
+			return th_old + th_new
+		else:
+			return th_old - th_new

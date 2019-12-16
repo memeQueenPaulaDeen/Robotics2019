@@ -29,26 +29,24 @@ class Encoder(Thread):
 	x_body = 0
 	y_body = 0
 
-	# assume Inertial frame origin is start pose
-	x_inertial_enc = 0
-	y_inertial_enc = 0
-	theata_enc = 0
 
 	#global inertal frame
-	x_inertial = 0
-	y_inertial = 0
-	theata = 0
+	x_inertial = None
+	y_inertial = None
+	theata = None
 
 	phiDotLeft = 0
 	phiDotRight = 0
 	phiDotSet = None
 
-	start_x_cm = None
-	start_y_cm = None
-	start_th = None
 
-	# def __init__(self,):
-	# 	Thread.__init__() #todo
+
+	def __init__(self,start_x_cm,start_y_cm,start_th):
+		Thread.__init__(self)
+		self.x_inertial = start_x_cm
+		self.y_inertial = start_y_cm
+		self.theata = start_th
+
 
 
 
@@ -150,21 +148,18 @@ class Encoder(Thread):
 			deltaX, deltaY, deltaThetaRad, phiDotLeft, phiDotRight = self.getDeltas()
 			self.x_body = self.x_body + deltaX
 			self.y_body = self.y_body + deltaY
-			self.x_inertial_enc = (math.cos(self.theata_enc) * deltaX - math.sin(self.theata_enc) * deltaY) + self.x_inertial_enc
-			self.y_inertial_enc = (math.sin(self.theata_enc) * deltaX + math.cos(self.theata_enc) * deltaY) + self.y_inertial_enc
-			self.theata_enc = self.theata_enc + deltaThetaRad
 			self.phiDotRight = phiDotRight
 			self.phiDotLeft = phiDotLeft
 
 			#do transform
-			eTb = self.p2t(self.x_inertial_enc, self.y_inertial_enc, self.theata_enc)
-			iTe = self.p2t(self.start_x_cm, self.start_y_cm, self.start_th)
+			eTb = self.p2t(deltaX, deltaY, deltaThetaRad)
+			iTe = self.p2t(self.x_inertial, self.y_inertial, self.theata)
 			iTb = np.matmul(iTe, eTb)
 			newPose = self.t2p(iTb)
 			#print("new Pose = " + str(newPose))
 			self.x_inertial = newPose[0]
 			self.y_inertial = newPose[1]
-			self.theata = newPose[2]
+			self.theata = self.theata + deltaThetaRad#newPose[2]
 
 
 	def p2t(self, x, y, th):
