@@ -89,22 +89,27 @@ class WaypointFollower():
 
                 r = w_curr
 
-                print("q_prev = " + str(q_i_prev))
-                print("q_curr = " + str(q_i_curr))
-                print("p = " + str(p))
-                print("r = " + str(r))
-                print("n = " + str(n))
-                print("Halfplane -> " + str(np.matmul((p - r).transpose(), n)))
+                # print("q_prev = " + str(q_i_prev))
+                # print("q_curr = " + str(q_i_curr))
+                # print("p = " + str(p))
+                # print("r = " + str(r))
+                # print("n = " + str(n))
+                # print("Halfplane -> " + str(np.matmul((p - r).transpose(), n)))
 
                 while np.matmul((p - r).transpose(), n) + 20 < 0:
                     # Follow Line
-                    follower.followLine(line, [self.pos.encoder.x_inertial, self.pos.encoder.y_inertial, self.pos.encoder.theata])
+                    #follower.followLine(line, [self.pos.encoder.x_inertial, self.pos.encoder.y_inertial, self.pos.encoder.theata])
+                    #follower.followLine(line, [self.pos.localizationClient.x_cm, self.pos.localizationClient.y_cm, self.pos.localizationClient.th])
+                    follower.followLine(line, [self.pos.X_fused, self.pos.Y_fused, self.pos.TH_fused])
 
+
+                    print("Encoder: " + str(self.pos.encoder.x_inertial) + " "+  str(self.pos.encoder.y_inertial) + " " + str(self.pos.encoder.theata))
+                    print("Localizaton: " + str(self.pos.localizationClient.x_cm) +" " +str(self.pos.localizationClient.y_cm)+ " "+ str (self.pos.localizationClient.th))
                     # Print Stuff
                     # print("p = " + str(p))
                     # print("r = " + str(r))
                     # print("n = " + str(n))
-                    print("Halfplane -> " + str(np.matmul((p - r).transpose(), n)))
+                    #print("Halfplane -> " + str(np.matmul((p - r).transpose(), n)))
 
                     # Update Position
                     p = [self.pos.encoder.x_inertial, self.pos.encoder.y_inertial]

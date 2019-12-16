@@ -16,6 +16,7 @@ class LocalizationClient():
 	x_cm = 0
 	y_cm = 0
 	th = 0
+	delta_t = 0
 
 	def __init__(self,lidar):
 		self.s.connect((self.TCP_IP, self.TCP_PORT))
@@ -64,15 +65,18 @@ class LocalizationClient():
 
 			measures = np.append([delx, dely, delth], measures)
 
-			print("measures " + str(measures))
+			#print("measures " + str(measures))
+			t_send = time.time()
 			self.sendData(measures)
 			x = pos.encoder.x_inertial*cm2mm
 			y = pos.encoder.y_inertial*cm2mm
 			th = pos.encoder.theata
 
 			dataIN = self.reciveMessage()
-			self.x = dataIN[0]*mm2cm
-			self.y = dataIN[1]*mm2cm
+			self.delta_t = t_send - time.time()
+			#print("time " + str(t_send - time.time()))
+			self.x_cm = dataIN[0]*mm2cm
+			self.y_cm = dataIN[1]*mm2cm
 			self.th = np.radians(dataIN[2])
 
 

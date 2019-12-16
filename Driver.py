@@ -149,18 +149,28 @@ if __name__ == "__main__":
 
 		start_th = np.radians(180)
 
-		pos = Pos.Position(start_x_cm,start_y_cm,start_th)
+		pos = Pos.Position(start_x_cm,start_y_cm,start_th,lo_c)
 
 		lo_c.sendStartPos(start_x_mm,start_y_mm,start_th)
 		time.sleep(2)
 		lo_c.startCommsThread(pos)
 		#logger = Logger.Logger('.//',pos)
 
+		while lo_c.y_cm == 0 and lo_c.x_cm == 0 and lo_c.th == 0:
+			time.sleep(.1)
+
 		# Init PID Controllers
 		PIDleft = PID.PID(Kp=0.6, Ki=0.25, Kd=0)
 		PIDRight = PID.PID(Kp=0.7, Ki=0.3, Kd=0)
 
-		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[20,25],[30,190]])
+		updateStateThread = threading.Thread(target=pos.updateState)
+		updateStateThread.start()
+
+		while pos.X_fused == None:
+			time.sleep(.1)
+
+
+		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[25,25],[30,190]])
 
 		wpf.followWaypoints()
 

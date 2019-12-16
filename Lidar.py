@@ -19,7 +19,7 @@ class Lidar(threading.Thread):
     ml = None
     mr = None
     measures = []
-    numScans = 16
+    numScans = 24
 
 
     def run(self):

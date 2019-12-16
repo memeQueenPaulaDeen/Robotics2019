@@ -34,12 +34,14 @@ class Encoder(Thread):
 	y_inertial_enc = 0
 	theata_enc = 0
 
+	#global inertal frame
 	x_inertial = 0
 	y_inertial = 0
 	theata = 0
 
 	phiDotLeft = 0
 	phiDotRight = 0
+	phiDotSet = None
 
 	start_x_cm = None
 	start_y_cm = None
@@ -159,7 +161,7 @@ class Encoder(Thread):
 			iTe = self.p2t(self.start_x_cm, self.start_y_cm, self.start_th)
 			iTb = np.matmul(iTe, eTb)
 			newPose = self.t2p(iTb)
-			print("new Pose = " + str(newPose))
+			#print("new Pose = " + str(newPose))
 			self.x_inertial = newPose[0]
 			self.y_inertial = newPose[1]
 			self.theata = newPose[2]

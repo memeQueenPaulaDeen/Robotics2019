@@ -2,16 +2,16 @@ clear;
 
 map_file_name = 'test_map3a.csv'; %csv occupancy map (0 is free region)
 cell_resolution = 50; %mm
-number_of_scans = 16; 
+number_of_scans = 24; 
 number_of_particles = 1000;
-resampling = 0.1; %from 0 to 1
+resampling = 0.2; %from 0 to 1
 
 %this is used when assigning weights to particles
 sigma_measurments = 50; %mm
 
 %this are used when resampling around particles
-sigma_angle = 4; %deg
-sigma_pos = 10; %mm
+sigma_angle = 8; %deg
+sigma_pos = 20; %mm
 
 % noise in lidar 
 noise_sigma = 30; %mm
@@ -126,9 +126,14 @@ while true
     %disp('Test')
     %disp(current_th)
     %disp(a.th_pos)
+    fprintf("%f.1 %f.1 %f.1\n", a.x_pos, a.y_pos, a.th_pos);
+    %a.x_pos
+    %a.y_pos
+    %a.th_pos
+
     
     %catch 
-    %    disp('no read')
+    %    disp('Bad read')
     %end
     
     %pause(delta_t);

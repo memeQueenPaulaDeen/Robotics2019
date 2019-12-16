@@ -23,17 +23,18 @@ class Follower:
         self.chi_inf = chi_inf
         self.k_theta_cmd = k_theta_cmd
         self.k_heading_change = k_heading_change
+        self.encoder.phiDotSet = phiDotSet
     
     def followLine(self,line,pose):
         thIDX = 2
 
         # Determine Cross-Track Error
         err_y = self.getDistFromLineAsPos(line, pose)[1]
-        print("cross track err " + str(err_y))
+        #print("cross track err " + str(err_y))
         
         # Get Theta-Command
         thCMD = line.theta - np.arctan(self.k_theta_cmd*err_y)*(2/np.pi)*self.chi_inf#in rad
-        print("Theta CMD: " + str(np.degrees(thCMD)))
+        #print("Theta CMD: " + str(np.degrees(thCMD)))
         
         # Get Current Theta from Encoders
         thCurent = pose[thIDX]
