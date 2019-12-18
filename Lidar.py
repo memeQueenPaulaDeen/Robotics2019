@@ -28,6 +28,7 @@ class Lidar(threading.Thread):
         while not proxyBool:
             time.sleep(.1)
             data = self.readScans(2)
+            self.rpLidar.clear_input()
             try:
                 m = self.getScan(data)
                 #self.prettyPrint(m)
@@ -61,7 +62,7 @@ class Lidar(threading.Thread):
 
                 min_index = angles.index(min(angles,key=lambda x:180-abs(abs(x-angle) - 180)))
 
-                measures.update({angle: [15, angles[min_index], distances[min_index]]})
+                measures.update({angle: [360/self.numScans, angles[min_index], distances[min_index]]})
 
 
 
@@ -126,7 +127,7 @@ class Lidar(threading.Thread):
         m = []
         num = self.numScans
         for x in range(num):
-            m.append([measures[(x*-360/num)%360][self.distanceIdx],(x*360/num)%360])#reverse scan order (- 45 first)
+            m.append([measures[(x*-360/num)%360][self.distanceIdx],measures[(x*360/num)%360][self.angleIdx]])#reverse scan order (- 45 first)
         self.measures = np.array(m)
 
     def waitForFirstRead(self):

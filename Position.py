@@ -37,8 +37,8 @@ class Position():
 			                             self.localizationClient.y_cm - self.encoder.y_inertial])
 			delta_th = abs(self.localizationClient.th - self.encoder.theata)
 
-			r = .2
-			if delta_dist > 15 or delta_th > np.radians(30) or self.getPoseLocalizationClient() != prevLocPose:#self.encoder.phiDotSet * self.encoder.wheelRadiusCm * self.localizationClient.delta_t:
+			r = .1
+			if delta_dist > 50 or delta_th > np.radians(90) or self.getPoseLocalizationClient() != prevLocPose:#self.encoder.phiDotSet * self.encoder.wheelRadiusCm * self.localizationClient.delta_t:
 				r = 0
 
 			fusedPose = np.dot(r,self.getPoseLocalizationClient()) + np.dot((1-r),self.getPoseEcoder())

@@ -3,7 +3,7 @@ clear;
 map_file_name = 'test_map3a.csv'; %csv occupancy map (0 is free region)
 cell_resolution = 50; %mm
 number_of_scans = 24; 
-number_of_particles = 1000;
+number_of_particles = 500;
 resampling = 0.2; %from 0 to 1
 
 %this is used when assigning weights to particles
@@ -21,11 +21,7 @@ delta_t = 0.1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-a = Particle_filter(map_file_name,cell_resolution,number_of_scans,number_of_particles,...
-    resampling,sigma_measurments,sigma_pos,sigma_angle);
-
-a.plot_map();
-a.show_particles();
+a = 0;
 
 current_x = 0;%5*cell_resolution;
 current_y = 0;%5*cell_resolution;
@@ -56,7 +52,7 @@ while flag
         end
 end
 
-
+firstTimeFlag = true;
 while true
     
     %try 
@@ -76,15 +72,14 @@ while true
             raw_data = fread(t, t.BytesAvailable);
             data = typecast(uint8(raw_data), 'double');
             
-            delta_x = data(1)
-            delta_y = data(2)
-            delta_theta = data(3) %assumes incomeing data is counter clockwise
+            delta_x = data(1);
+            delta_y = data(2);
+            delta_theta = data(3); %assumes incomeing data is counter clockwise
             
-            mesures = data(end-(2*number_of_scans-1):2:end); %force it to give only last scan
-            angles = data(end-(2*number_of_scans-2):2:end); % force it to give only last scan)
+            mesures = data(end-(2*number_of_scans-1):2:end) %force it to give only last scan
+            angles = data(end-(2*number_of_scans-2):2:end) % force it to give only last scan)
             
-%             mesures = data(end-(2*number_of_scans-1):2:end); %force it to give only last scan
-%             angles = data(end-(2*number_of_scans-2):2:end); % force it to give only last scan)
+             
             flag = false;
         end
         pause(.02);
@@ -92,16 +87,24 @@ while true
     
     %mesures = circshift(mesures,2);
     
+    if firstTimeFlag
+        a = Particle_filter(map_file_name,cell_resolution,number_of_scans,number_of_particles,...
+            resampling,sigma_measurments,sigma_pos,sigma_angle,angles);
+
+        a.plot_map();
+        a.show_particles();
+
+        firstTimeFlag = false;
+    end
     
-    
-    a.update_state(delta_x,delta_y,delta_theta,mesures);
+    a.update_state(delta_x,delta_y,delta_theta,mesures,angles);
     
    a.show_particles(); 
    a.show_location();
     
     vert_x = current_x;
     vert_y = current_y;
-    %current_th = a.th_pos;
+    current_th = a.th_pos;
     
     dataOut = typecast([a.x_pos,a.y_pos,a.th_pos],'uint8');
     fwrite(t,dataOut);

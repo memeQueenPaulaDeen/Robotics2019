@@ -170,7 +170,7 @@ if __name__ == "__main__":
 			time.sleep(.1)
 
 
-		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[25,25],[30,190]])
+		wpf = waypoint_follower.WaypointFollower(pos,motors,PIDleft,PIDRight,[[23,25],[30,190]])
 
 		wpf.followWaypoints()
 

@@ -38,9 +38,9 @@ classdef Particle_filter<handle
     
     methods
         function this_loc = Particle_filter(file_name,cell_size,n_angles,N_samples,...
-                resample_rate,sigma_measure,sigma_resample_pos,sigma_resample_angle)
+                resample_rate,sigma_measure,sigma_resample_pos,sigma_resample_angle,angle_vec)
             
-            if nargin == 8     
+            if nargin == 9     
                 % LOAD MAP
                 this_loc.grid_map = csvread(file_name);
                 
@@ -56,7 +56,7 @@ classdef Particle_filter<handle
                 [this_loc.rows,this_loc.cols] = size(this_loc.grid_map);
                                 
                 % INITIALIZE PARTICLES
-                this_loc = init_particles(this_loc);
+                this_loc = init_particles(this_loc,angle_vec);
                 
                 % INIT LOCATION    
                 this_loc.update_estimation();            
@@ -251,7 +251,7 @@ classdef Particle_filter<handle
             
         end
                         
-        function this_loc = init_particles(this_loc)
+        function this_loc = init_particles(this_loc,angle_vec)
             this_loc.particles = NaN(this_loc.N_samples,4+this_loc.n_angles);
             weight = 1/this_loc.N_samples;
             max_x = 0.99998*(this_loc.cols*this_loc.cell_size);
@@ -275,19 +275,25 @@ classdef Particle_filter<handle
                 end
                 
                 vector_scans = this_loc.get_scans(this_loc.particles(i,1),...
-                    this_loc.particles(i,2),this_loc.particles(i,3));
+                    this_loc.particles(i,2),this_loc.particles(i,3),angle_vec);
                 
                 this_loc.particles(i,5:end) = vector_scans;
                 
             end
         end
         
-        function vector_scans = get_scans(this_loc,x,y,th)
+        function vector_scans = get_scans(this_loc,x,y,th,angle_vec)
             vector_scans = NaN(1,this_loc.n_angles);
-            for i=1:this_loc.n_angles
+            for i=1:length(angle_vec)
+                if i == 1 % first time through the loop scan is @ particle pose + first offset [angle] 
+                    th = th + angle_vec(i);
+                else
+                    relativeDelta = (angle_vec(i) - angle_vec(i-1));
+                    th = th + relativeDelta; 
+                end
+                
                 [vector_scans(i),~,~] = this_loc.ray_tracing(x,y,th);
-                th = th + this_loc.angle_resolution;
-                mod(th,360);
+                %mod(th,360);%no assignment no effect?
                 
             end
         end
@@ -353,7 +359,7 @@ classdef Particle_filter<handle
             
         end
                 
-        function re_sample(this_loc,measurements_vec)
+        function re_sample(this_loc,measurements_vec,angle_vec)
             max_x_GEN = 0.99998*this_loc.cols*this_loc.cell_size;
             max_y_GEN = 0.99998*this_loc.rows*this_loc.cell_size;
             
@@ -423,7 +429,7 @@ classdef Particle_filter<handle
                     new_particles(index,3) = thth;
                     
                     vector_scans = this_loc.get_scans(new_particles(index,1),...
-                    new_particles(index,2),new_particles(index,3));
+                    new_particles(index,2),new_particles(index,3),angle_vec);
                 
                     new_particles(index,5:end) = vector_scans;
                     new_particles(index,4) = weight; %not really necessary, just for future developments    
@@ -454,7 +460,7 @@ classdef Particle_filter<handle
                 end
 
                 vector_scans = this_loc.get_scans(new_particles(i,1),...
-                    new_particles(i,2),new_particles(i,3));
+                    new_particles(i,2),new_particles(i,3),angle_vec);
                 
                 new_particles(i,5:end) = vector_scans;
             end
@@ -476,13 +482,13 @@ classdef Particle_filter<handle
             this_loc.th_pos = C_th(ind_th);
         end
         
-        function update_state(this_loc,delta_x,delta_y,delta_theta,distance_vec)
+        function update_state(this_loc,delta_x,delta_y,delta_theta,distance_vec,angle_vec)
             
             %move particles
             this_loc.move_particles(delta_x,delta_y,delta_theta);
        
             %resample
-            this_loc.re_sample(distance_vec);
+            this_loc.re_sample(distance_vec,angle_vec);
             
             %update estimation
             this_loc.update_estimation();
